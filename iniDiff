@@ -1,0 +1,55 @@
+#!/usr/bin/env php
+<?php
+
+function help() {
+  print("┌──────────══ Help Menu \n");
+  print("├──────\n");
+  print("├ Usage: ".basename(__FILE__)." [File 1] [File 2]\n");
+  print("└──────\n");
+}
+
+if (count($argv) > 3 || empty($argv[1]) || empty($argv[2]) || ! file_exists($argv[1]) || !file_exists($argv[2])) {
+  help();
+  exit();
+}
+ 
+$file1_ini_arr = parse_ini_file("$argv[1]", true, 1);
+$file2_ini_arr = parse_ini_file("$argv[2]" , true, 1);
+
+// check sections missing from file 2
+$result = array_diff_key($file1_ini_arr, $file2_ini_arr);
+foreach ($result as $section => $options) {
+  print("┌──────══ [\033[31m".$section."\033[39m]\n");
+  foreach ($result[$section] as $option => $value) {
+    print("├ \033[33m<<\033[39m ".$option." = ".$value."\n");
+  }
+  print("└────────\n");
+  unset($file1_ini_arr[$section]);
+}
+// check sections missing from file 1
+$result = array_diff_key($file2_ini_arr, $file1_ini_arr);
+foreach ($result as $section => $options) {
+  print("┌──────══ [\033[31m".$section."\033[39m]\n");
+  foreach ($result[$section] as $option => $value) {
+    print("├ \033[31m>>\033[39m ".$option." = ".$value."\n");
+  }
+  print("└────────\n");
+  unset($file2_ini_arr[$section]);
+}
+// check option inside sections
+foreach ($file1_ini_arr as $section => $options) {
+  $diff_file1_result = array_diff($file1_ini_arr[$section], $file2_ini_arr[$section]);
+  $diff_file2_result = array_diff($file2_ini_arr[$section], $file1_ini_arr[$section]);
+  if (!empty($diff_file1_result) || !empty($diff_file2_result)){
+    print("┌──────══ [\033[31m".$section."\033[39m]\n");
+    foreach ($diff_file1_result as $option => $value) {
+      print("├ \033[33m<<\033[39m ".$option." = ".$value."\n");
+    }
+    foreach ($diff_file2_result as $option => $value) {
+      print("├ \033[31m>>\033[39m ".$option." = ".$value."\n");
+    }
+    print("└────────\n");
+  }
+}
+
+?>
