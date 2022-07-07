@@ -2,11 +2,13 @@ iniDiff
 
 iniDiff is a php script created to compare two .ini/config files.
 
-the File format given to iniDiff has to similar to:
+the File format given to iniDiff has to be similar to:
 ```
 [section]
 option = value
 ```
+
+iniDiff will remove any comments in the file that start with either ; or #
 
 Output will look as follows:
 ```
