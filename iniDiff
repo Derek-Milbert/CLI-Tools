@@ -13,10 +13,15 @@ if (count($argv) > 3 || empty($argv[1]) || empty($argv[2]) || ! file_exists($arg
   exit();
 }
  
-$file1_ini_arr = parse_ini_file("$argv[1]", true, 1);
-$file2_ini_arr = parse_ini_file("$argv[2]" , true, 1);
+// Remove comments that use # instead of ; 
+$file1_filttered = preg_replace('/ *#.*/','', file_get_contents($argv[1]));
+$file2_filttered = preg_replace('/ *#.*/','', file_get_contents($argv[2]));
 
-// check sections missing from file 2
+// Parse config files to an array
+$file1_ini_arr = parse_ini_string("$file1_filttered", true, 1);
+$file2_ini_arr = parse_ini_string("$file2_filttered" , true, 1);
+
+// check sections and options missing from file 2
 $result = array_diff_key($file1_ini_arr, $file2_ini_arr);
 foreach ($result as $section => $options) {
   print("┌──────══ [\033[31m".$section."\033[39m]\n");
@@ -26,7 +31,8 @@ foreach ($result as $section => $options) {
   print("└────────\n");
   unset($file1_ini_arr[$section]);
 }
-// check sections missing from file 1
+
+// check sections and options missing from file 1
 $result = array_diff_key($file2_ini_arr, $file1_ini_arr);
 foreach ($result as $section => $options) {
   print("┌──────══ [\033[31m".$section."\033[39m]\n");
@@ -36,7 +42,8 @@ foreach ($result as $section => $options) {
   print("└────────\n");
   unset($file2_ini_arr[$section]);
 }
-// check option inside sections
+
+// Compare options the two files have in common and output the differences
 foreach ($file1_ini_arr as $section => $options) {
   $diff_file1_result = array_diff($file1_ini_arr[$section], $file2_ini_arr[$section]);
   $diff_file2_result = array_diff($file2_ini_arr[$section], $file1_ini_arr[$section]);
